@@ -124,8 +124,8 @@ Do this once in the `calculator-assetfinanceshop` AWS account console. Region: *
 
 In `github.com/assetfinanceshop/subvention-calculator/settings/secrets/actions` (or as Org Secrets at `github.com/organizations/assetfinanceshop/settings/secrets/actions`):
 
-- `ORIGINAL_AWS_ACCESS_KEY_ID`
-- `ORIGINAL_AWS_SECRET_ACCESS_KEY`
+- `AWS_ACCESS_KEY_ID`
+- `AWS_SECRET_ACCESS_KEY`
 - `CLOUDFRONT_DISTRIBUTION_ID` = the ID from step 5
 
 The IAM user behind those AWS keys needs:
