@@ -1,0 +1,11 @@
+{
+  "name": "subvention-calc-auth",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Auth Lambda for the TAFS Subvention Calculator. Validates the password against Secrets Manager and issues a 24h HMAC-signed JWT.",
+  "main": "index.mjs",
+  "engines": {
+    "node": ">=20"
+  }
+}

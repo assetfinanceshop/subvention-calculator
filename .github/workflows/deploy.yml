@@ -1,0 +1,52 @@
+name: Build & deploy subvention calculator
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ap-southeast-2
+  S3_BUCKET: subvention-calculator-assetfinanceshop
+  LAMBDA_NAME: subvention-calc-auth
+  CLOUDFRONT_PATHS: "/*"
+
+jobs:
+  deploy:
+    name: Sync static + update Lambda + invalidate CloudFront
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.ORIGINAL_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.ORIGINAL_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync static assets to S3
+        run: |
+          aws s3 sync public/ s3://${{ env.S3_BUCKET }}/ --delete
+
+      - name: Package Lambda
+        run: |
+          cd lambda
+          zip -r ../lambda.zip . -x "*.DS_Store" "node_modules/*" "*.test.*"
+          cd ..
+          ls -la lambda.zip
+
+      - name: Update Lambda code
+        run: |
+          aws lambda update-function-code \
+            --function-name ${{ env.LAMBDA_NAME }} \
+            --zip-file fileb://lambda.zip \
+            --publish
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "${{ env.CLOUDFRONT_PATHS }}"

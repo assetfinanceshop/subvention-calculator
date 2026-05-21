@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subvention Calculator</title>
+<style>
+  /* ============================================================
+     BRAND FONTS — Manrope (official TAFS typeface)
+     ============================================================ */
+  @font-face {
+    font-family: "Manrope";
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url("./fonts/Manrope-Regular.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Manrope";
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url("./fonts/Manrope-Medium.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Manrope";
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url("./fonts/Manrope-SemiBold.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Manrope";
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url("./fonts/Manrope-Bold.ttf") format("truetype");
+  }
+  @font-face {
+    font-family: "Manrope";
+    font-style: normal;
+    font-weight: 800;
+    font-display: swap;
+    src: url("./fonts/Manrope-ExtraBold.ttf") format("truetype");
+  }
+
+  /* ============================================================
+     BRAND VARIABLES
+     ============================================================ */
+  :root {
+    --brand-bg:        #f4f5f7;
+    --brand-surface:   #ffffff;
+    --brand-ink:       #1a1d24;
+    --brand-muted:     #6b7280;
+    --brand-line:      #e3e6ea;
+    --brand-accent:    #2563eb;
+    --brand-accent-2:  #1d4ed8;
+    --brand-result-bg: #0f1729;
+    --brand-result-ink:#ffffff;
+    --brand-good:      #16a34a;
+    --brand-warn:      #dc2626;
+    --brand-radius:    18px;
+    --brand-radius-sm: 999px;
+    --font-display: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-body:    "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono:    "SF Mono", "Consolas", "Roboto Mono", monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font-body);
+    background: var(--brand-bg);
+    color: var(--brand-ink);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding: 32px 16px;
+    min-height: 100vh;
+  }
+
+  .wrap { max-width: 880px; margin: 0 auto; }
+
+  /* ============================================================
+     LOGIN OVERLAY
+     ============================================================ */
+  #login-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(135deg, #84E0F9 0%, #55A2E0 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 24px;
+  }
+  #login-overlay.hidden { display: none; }
+  .login-card {
+    background: #fff;
+    border-radius: 22px;
+    padding: 36px 32px 30px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.18);
+    text-align: center;
+  }
+  .login-card .brand-logo {
+    height: 56px;
+    width: auto;
+    display: block;
+    margin: 0 auto 22px;
+  }
+  .login-card h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--brand-ink);
+    margin-bottom: 6px;
+  }
+  .login-card p.sub {
+    font-size: 13px;
+    color: var(--brand-muted);
+    margin-bottom: 22px;
+  }
+  .login-field {
+    display: flex;
+    align-items: center;
+    background: var(--brand-bg);
+    border: 1px solid var(--brand-line);
+    border-radius: 999px;
+    padding: 10px 18px;
+    margin-bottom: 12px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  .login-field:focus-within {
+    border-color: var(--brand-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-accent) 18%, transparent);
+    background: #fff;
+  }
+  .login-field input {
+    flex: 1;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--brand-ink);
+    letter-spacing: 0.06em;
+  }
+  .login-error {
+    font-size: 12px;
+    color: var(--brand-warn);
+    min-height: 16px;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+  .login-btn {
+    width: 100%;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #84E0F9 0%, #55A2E0 100%);
+    color: var(--brand-ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    font-weight: 800;
+    padding: 12px 18px;
+    cursor: pointer;
+    transition: transform .12s, box-shadow .15s;
+  }
+  .login-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(85, 162, 224, 0.35); }
+  .login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .login-foot {
+    margin-top: 18px;
+    font-size: 10.5px;
+    color: var(--brand-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  /* ============================================================
+     CALCULATOR
+     ============================================================ */
+  #app[hidden] { display: none; }
+
+  header { margin-bottom: 28px; }
+  header .brand-logo {
+    height: 64px;
+    width: auto;
+    display: block;
+    margin-bottom: 20px;
+  }
+  header h1 {
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  header p { color: var(--brand-muted); font-size: 14px; margin-top: 4px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1.2fr;
+    gap: 20px;
+    align-items: stretch;
+  }
+  @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--brand-surface);
+    border: 1px solid var(--brand-line);
+    border-radius: var(--brand-radius);
+    padding: 24px;
+  }
+  .card h2 {
+    font-size: 13.2px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--brand-muted);
+    margin-bottom: 18px;
+  }
+
+  .field { margin-bottom: 14px; }
+  .field label {
+    display: block;
+    font-size: 14.3px;
+    color: var(--brand-muted);
+    margin-bottom: 5px;
+  }
+  .input-line { position: relative; display: flex; align-items: center; }
+  .input-line .prefix,
+  .input-line .suffix {
+    position: absolute;
+    font-size: 14px;
+    color: var(--brand-muted);
+    pointer-events: none;
+  }
+  .input-line .prefix { left: 12px; }
+  .input-line .suffix { right: 12px; }
+  .input-line.has-prefix input { padding-left: 26px; }
+  .input-line.has-suffix input { padding-right: 30px; }
+
+  input[type="number"] {
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--brand-ink);
+    background: var(--brand-bg);
+    border: 1px solid var(--brand-line);
+    border-radius: var(--brand-radius-sm);
+    padding: 10px 12px;
+    transition: border-color .15s, box-shadow .15s;
+  }
+  input[type="number"]:focus {
+    outline: none;
+    border-color: var(--brand-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-accent) 18%, transparent);
+    background: var(--brand-surface);
+  }
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; appearance: textfield; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* Results panel */
+  .result {
+    background: linear-gradient(135deg, #84E0F9 0%, #55A2E0 100%);
+    color: var(--brand-ink);
+    border-radius: var(--brand-radius);
+    padding: 24px;
+    position: sticky;
+    top: 32px;
+    overflow: hidden;
+  }
+  .result h2 { color: rgba(255, 255, 255, 0.9); }
+  .headline { margin: 6px 0 22px; }
+  .headline .lbl {
+    font-size: 13px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 6px;
+  }
+  .headline .val {
+    font-family: var(--font-display);
+    font-size: 40px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: #fff;
+  }
+  .breakdown { border-top: 1px solid rgba(255, 255, 255, 0.28); padding-top: 16px; }
+  .line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 7px 0;
+    font-size: 18.2px;
+  }
+  .line .k { color: rgba(255, 255, 255, 0.85); font-weight: 700; }
+  .line .v { font-family: var(--font-mono); color: #fff; font-weight: 700; }
+  .line.strong .k, .line.strong .v { color: #fff; font-weight: 800; }
+
+  .check {
+    margin-top: 16px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .check .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .check.ok   { background: rgba(255, 255, 255, 0.85); color: #166534; }
+  .check.ok .dot   { background: var(--brand-good); }
+  .check.warn { background: rgba(255, 255, 255, 0.85); color: #991b1b; }
+  .check.warn .dot { background: var(--brand-warn); }
+
+  .note { font-size: 11px; color: rgba(255, 255, 255, 0.85); margin-top: 18px; line-height: 1.5; }
+
+  footer { margin-top: 22px; font-size: 11px; color: var(--brand-muted); text-align: center; }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN OVERLAY ============ -->
+<div id="login-overlay">
+  <div class="login-card">
+    <svg class="brand-logo" viewBox="0 0 1666.54 568.07" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TAFS — The Asset Finance Shop">
+      <defs>
+        <linearGradient id="login-tafs-grad" x1="91.43" y1="320.56" x2="380.71" y2="501.17" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#84E0F9"/>
+          <stop offset="1" stop-color="#55A2E0"/>
+        </linearGradient>
+        <linearGradient id="login-tafs-text-grad" x1="580" y1="100" x2="1666" y2="450" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#84E0F9"/>
+          <stop offset="1" stop-color="#55A2E0"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#login-tafs-grad)" d="M395.73,265.87c-10.34-6.09-22.28-12.75-36.08-19.96-88.94-46.47-157.02-88.49-123.52-146.51C267.41,45.21,290.61,5.06,293.53,0c-3.17,5.49-28.75,51.74-9.28,82.28,20.71,32.52,102.55,81.93,126.59,125.56,23.63,42.88,48.9,105.53,49.76,107.67-.26-.46-2.35-3.98-9.37-10.58-8.77-8.23-25.25-21.26-55.5-39.07Z"/>
+      <path fill="url(#login-tafs-grad)" d="M460.6,315.52c-.1-.24-1.94-3.78-9.37-10.58-8.87-8.12-25.25-21.26-55.5-39.07,0,0-3.31,21.69-165.02,68.44-161.69,46.75-170.73,70.2-181.98,89.69C37.48,443.47,0,508.39,0,508.39c0,0,88.56-54.37,251.97-80.66s196.89-66.47,206.96-83.92c6.8-11.77,1.68-28.29,1.68-28.29Z"/>
+      <text x="580" y="330" font-family="Manrope, system-ui, sans-serif" font-weight="900" font-size="370" fill="url(#login-tafs-text-grad)" letter-spacing="-12">TAFS</text>
+      <text x="580" y="445" font-family="Manrope, system-ui, sans-serif" font-weight="600" font-size="80" fill="#55A2E0" letter-spacing="2">The Asset Finance Shop</text>
+    </svg>
+    <h1>Subvention Calculator</h1>
+    <p class="sub">Enter the access password to continue.</p>
+    <form id="login-form" autocomplete="off">
+      <div class="login-field">
+        <input type="password" id="login-password" placeholder="Password" autocomplete="current-password" required>
+      </div>
+      <div class="login-error" id="login-error">&nbsp;</div>
+      <button type="submit" class="login-btn" id="login-btn">Unlock</button>
+    </form>
+    <p class="login-foot">Access cached for 24 hours · per browser</p>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" hidden>
+<div class="wrap">
+  <header>
+    <svg class="brand-logo" viewBox="0 0 1666.54 568.07" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TAFS — The Asset Finance Shop">
+      <defs>
+        <linearGradient id="tafs-grad" x1="91.43" y1="320.56" x2="380.71" y2="501.17" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#84E0F9"/>
+          <stop offset="1" stop-color="#55A2E0"/>
+        </linearGradient>
+        <linearGradient id="tafs-text-grad" x1="580" y1="100" x2="1666" y2="450" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#84E0F9"/>
+          <stop offset="1" stop-color="#55A2E0"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#tafs-grad)" d="M395.73,265.87c-10.34-6.09-22.28-12.75-36.08-19.96-88.94-46.47-157.02-88.49-123.52-146.51C267.41,45.21,290.61,5.06,293.53,0c-3.17,5.49-28.75,51.74-9.28,82.28,20.71,32.52,102.55,81.93,126.59,125.56,23.63,42.88,48.9,105.53,49.76,107.67-.26-.46-2.35-3.98-9.37-10.58-8.77-8.23-25.25-21.26-55.5-39.07Z"/>
+      <path fill="url(#tafs-grad)" d="M460.6,315.52c-.1-.24-1.94-3.78-9.37-10.58-8.87-8.12-25.25-21.26-55.5-39.07,0,0-3.31,21.69-165.02,68.44-161.69,46.75-170.73,70.2-181.98,89.69C37.48,443.47,0,508.39,0,508.39c0,0,88.56-54.37,251.97-80.66s196.89-66.47,206.96-83.92c6.8-11.77,1.68-28.29,1.68-28.29Z"/>
+      <text x="580" y="330" font-family="Manrope, system-ui, sans-serif" font-weight="900" font-size="370" fill="url(#tafs-text-grad)" letter-spacing="-12">TAFS</text>
+      <text x="580" y="445" font-family="Manrope, system-ui, sans-serif" font-weight="600" font-size="80" fill="#55A2E0" letter-spacing="2">The Asset Finance Shop</text>
+    </svg>
+    <h1>Subvention Calculator</h1>
+    <p>Calculates the rate buy-down payment for a subvented asset-finance deal. Payments are in advance.</p>
+  </header>
+
+  <div class="grid">
+    <!-- INPUTS -->
+    <div class="card">
+      <h2>Deal Inputs</h2>
+
+      <div class="field">
+        <label>Purchase Price</label>
+        <div class="input-line has-prefix">
+          <span class="prefix">$</span>
+          <input type="number" id="purchasePrice" value="100000" step="1000">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Deposit</label>
+        <div class="input-line has-prefix">
+          <span class="prefix">$</span>
+          <input type="number" id="deposit" value="0" step="1000">
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Establishment Fee</label>
+          <div class="input-line has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="estabFee" value="495" step="5">
+          </div>
+        </div>
+        <div class="field">
+          <label>Doc Fee</label>
+          <div class="input-line has-prefix">
+            <span class="prefix">$</span>
+            <input type="number" id="docFee" value="500" step="5">
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Brokerage</label>
+        <div class="input-line has-suffix">
+          <input type="number" id="brokeragePct" value="3" step="0.1">
+          <span class="suffix">%</span>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Term</label>
+          <div class="input-line has-suffix">
+            <input type="number" id="term" value="60" step="1">
+            <span class="suffix">mo</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Balloon</label>
+          <div class="input-line has-suffix">
+            <input type="number" id="balloonPct" value="0" step="1">
+            <span class="suffix">%</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Customer (Subvention) Rate</label>
+          <div class="input-line has-suffix">
+            <input type="number" id="subvRate" value="4.99" step="0.01">
+            <span class="suffix">%</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>TAFS (Cost) Rate</label>
+          <div class="input-line has-suffix">
+            <input type="number" id="selfcoRate" value="8.5" step="0.01">
+            <span class="suffix">%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="result">
+      <h2>Result</h2>
+      <div class="headline">
+        <div class="lbl">Subvention Payment (excl. GST)</div>
+        <div class="val" id="subvOut">$0</div>
+      </div>
+
+      <div class="breakdown">
+        <div class="line"><span class="k">Net Amount</span><span class="v" id="netOut">$0</span></div>
+        <div class="line"><span class="k">Brokerage $</span><span class="v" id="brkOut">$0</span></div>
+        <div class="line"><span class="k">GST on brokerage</span><span class="v" id="gstOut">$0</span></div>
+        <div class="line strong"><span class="k">Amount Financed</span><span class="v" id="afOut">$0</span></div>
+        <div class="line"><span class="k">Balloon $</span><span class="v" id="balloonOut">$0</span></div>
+        <div class="line"><span class="k">Customer Payment</span><span class="v" id="custOut">$0</span></div>
+        <div class="line"><span class="k">PV rate</span><span class="v" id="pvOut">$0</span></div>
+      </div>
+
+      <div id="checkBadge" class="check ok"><span class="dot"></span><span id="checkText">OKAY</span></div>
+
+      <p class="note">Subvention = Amount Financed − present value of the customer payment stream discounted at the TAFS cost rate. Reproduces the Excel/Solver model in closed form.</p>
+    </div>
+  </div>
+
+  <footer>Web version — math computed live, no add-ins required.</footer>
+</div>
+</div>
+
+<!-- ============ AUTH GATE ============ -->
+<script>
+(function () {
+  var TOKEN_KEY = 'subv_jwt';
+  var AUTH_ENDPOINT = '/auth';
+
+  function decodeJwt(token) {
+    try {
+      var payload = token.split('.')[1];
+      var json = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(json);
+    } catch (e) { return null; }
+  }
+
+  function tokenIsValid(token) {
+    if (!token) return false;
+    var payload = decodeJwt(token);
+    if (!payload || !payload.exp) return false;
+    return payload.exp * 1000 > Date.now();
+  }
+
+  function showApp() {
+    document.getElementById('login-overlay').classList.add('hidden');
+    document.getElementById('app').hidden = false;
+    if (typeof window.__initCalc === 'function') window.__initCalc();
+  }
+
+  function showLogin() {
+    document.getElementById('login-overlay').classList.remove('hidden');
+    document.getElementById('app').hidden = true;
+    setTimeout(function () { document.getElementById('login-password').focus(); }, 30);
+  }
+
+  var existing = null;
+  try { existing = localStorage.getItem(TOKEN_KEY); } catch (e) {}
+
+  if (tokenIsValid(existing)) {
+    showApp();
+  } else {
+    try { if (existing) localStorage.removeItem(TOKEN_KEY); } catch (e) {}
+    showLogin();
+  }
+
+  document.getElementById('login-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var pwInput = document.getElementById('login-password');
+    var errEl = document.getElementById('login-error');
+    var btn = document.getElementById('login-btn');
+    var password = pwInput.value;
+    if (!password) return;
+
+    errEl.textContent = ' ';
+    btn.disabled = true;
+    btn.textContent = 'Checking…';
+
+    fetch(AUTH_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: password })
+    }).then(function (res) {
+      if (res.status === 401) {
+        errEl.textContent = 'Incorrect password.';
+        return null;
+      }
+      if (!res.ok) {
+        errEl.textContent = 'Login failed. Try again.';
+        return null;
+      }
+      return res.json();
+    }).then(function (data) {
+      if (!data || !data.token) return;
+      try { localStorage.setItem(TOKEN_KEY, data.token); } catch (e) {}
+      pwInput.value = '';
+      showApp();
+    }).catch(function () {
+      errEl.textContent = 'Network error. Try again.';
+    }).finally(function () {
+      btn.disabled = false;
+      btn.textContent = 'Unlock';
+    });
+  });
+})();
+</script>
+
+<!-- ============ CALCULATOR ============ -->
+<script>
+window.__initCalc = (function () {
+  var initialised = false;
+
+  function pmt(rate, nper, pv, fv, type) {
+    if (rate === 0) return -(pv + fv) / nper;
+    var p = Math.pow(1 + rate, nper);
+    var payment = (rate * (pv * p + fv)) / (p - 1);
+    if (type === 1) payment = payment / (1 + rate);
+    return -payment;
+  }
+  function pv(rate, nper, pmtVal, fv, type) {
+    if (rate === 0) return -(fv + pmtVal * nper);
+    var p = Math.pow(1 + rate, nper);
+    var pmtAdj = (type === 1) ? pmtVal * (1 + rate) : pmtVal;
+    return -(fv + pmtAdj * (p - 1) / rate) / p;
+  }
+
+  var ids = ['purchasePrice','deposit','estabFee','docFee','brokeragePct',
+             'term','balloonPct','subvRate','selfcoRate'];
+  function num(id){ var v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; }
+  function money(n){
+    return (n < 0 ? '-$' : '$') + Math.abs(n).toLocaleString('en-AU',
+      {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
+
+  function calc() {
+    var pp     = num('purchasePrice');
+    var dep    = num('deposit');
+    var estab  = num('estabFee');
+    var doc    = num('docFee');
+    var brkPct = num('brokeragePct') / 100;
+    var term   = num('term');
+    var balPct = num('balloonPct') / 100;
+    var subvR  = num('subvRate') / 100;
+    var selfcoR= num('selfcoRate') / 100;
+
+    var net      = pp - dep;
+    var brk      = net * brkPct;
+    var gst      = brk * 0.10 * 0.25;
+    var amtFin   = net + estab + doc + brk + gst;
+    var balloon  = net * balPct;
+
+    var custPmt  = pmt(subvR/12, term, amtFin, -balloon, 1);
+    var pvSelfco = pv(selfcoR/12, term, custPmt, -balloon, 1);
+    var subv     = amtFin - pvSelfco;
+
+    var checkPmt = pmt(selfcoR/12, term, pvSelfco, -balloon, 1);
+    var ok = Math.abs(checkPmt - custPmt) < 0.01;
+
+    document.getElementById('subvOut').textContent    = money(subv);
+    document.getElementById('netOut').textContent     = money(net);
+    document.getElementById('brkOut').textContent     = money(brk);
+    document.getElementById('gstOut').textContent     = money(gst);
+    document.getElementById('afOut').textContent      = money(amtFin);
+    document.getElementById('balloonOut').textContent = money(balloon);
+    document.getElementById('custOut').textContent    = money(custPmt);
+    document.getElementById('pvOut').textContent      = money(pvSelfco);
+
+    var badge = document.getElementById('checkBadge');
+    var txt   = document.getElementById('checkText');
+    if (ok) { badge.className = 'check ok';   txt.textContent = 'OKAY'; }
+    else    { badge.className = 'check warn'; txt.textContent = 'CHECK'; }
+  }
+
+  return function init() {
+    if (initialised) { calc(); return; }
+    initialised = true;
+    ids.forEach(function(id){ document.getElementById(id).addEventListener('input', calc); });
+    calc();
+  };
+})();
+</script>
+</body>
+</html>

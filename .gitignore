@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# Build artefacts
+lambda.zip
+node_modules/
+
+# Secrets / local env
+.env
+.env.local
+*.pem
+*.key
+
+# Logs / scratch
+*.log
+*.tmp
+*.bak
