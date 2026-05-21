@@ -3,35 +3,16 @@
 // POST { password } → 200 { token } | 401 | 500
 //
 // Env vars:
-//   SECRET_ARN          — Secrets Manager ARN holding the password
-//                         (SecretString may be either the raw password or JSON { "password": "..." })
+//   PASSWORD            — the access password (KMS-encrypted at rest by Lambda)
 //   JWT_SIGNING_SECRET  — random 32+ byte string used to HMAC-SHA256 sign tokens
 //   JWT_TTL_HOURS       — optional, defaults to 24
 //   CORS_ORIGIN         — optional, defaults to "*" (set to your CloudFront origin in prod)
 
-import { SecretsManagerClient, GetSecretValueCommand } from "@aws-sdk/client-secrets-manager";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-const sm = new SecretsManagerClient({});
-let cachedPassword = null;
-let cachedAt = 0;
-const SECRET_CACHE_MS = 5 * 60 * 1000; // 5 min — survives warm starts, refreshes if rotated
-
-async function getPassword() {
-  if (cachedPassword && Date.now() - cachedAt < SECRET_CACHE_MS) return cachedPassword;
-  const arn = process.env.SECRET_ARN;
-  if (!arn) throw new Error("SECRET_ARN env var not set");
-  const res = await sm.send(new GetSecretValueCommand({ SecretId: arn }));
-  const raw = res.SecretString || "";
-  let pw;
-  try {
-    const parsed = JSON.parse(raw);
-    pw = parsed.password || parsed.value || raw;
-  } catch {
-    pw = raw;
-  }
-  cachedPassword = pw;
-  cachedAt = Date.now();
+function getPassword() {
+  const pw = process.env.PASSWORD;
+  if (!pw) throw new Error("PASSWORD env var not set");
   return pw;
 }
 
@@ -100,9 +81,9 @@ export const handler = async (event) => {
 
   let expected;
   try {
-    expected = await getPassword();
+    expected = getPassword();
   } catch (e) {
-    console.error("Secrets Manager error:", e);
+    console.error("password env var error:", e);
     return json(500, { error: "Server misconfigured" });
   }
 

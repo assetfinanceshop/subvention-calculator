@@ -494,7 +494,7 @@
 <script>
 (function () {
   var TOKEN_KEY = 'subv_jwt';
-  var AUTH_ENDPOINT = '/auth';
+  var AUTH_ENDPOINT = 'https://f0rxw4clua.execute-api.ap-southeast-2.amazonaws.com/auth';
 
   function decodeJwt(token) {
     try {
@@ -647,6 +647,12 @@ window.__initCalc = (function () {
     calc();
   };
 })();
+
+// Cached-JWT path: if the auth gate already showed the app before this
+// script defined __initCalc, run it now so the result panel populates.
+if (document.getElementById('app') && !document.getElementById('app').hidden) {
+  window.__initCalc();
+}
 </script>
 </body>
 </html>

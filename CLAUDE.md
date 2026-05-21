@@ -9,3 +9,5 @@ When working on this repo (the TAFS subvention calculator), follow these rules:
 3. **Don't make any changes other than what I have requested.** Stay narrowly scoped to the specific task. No "while I'm here" refactors, no extra files, no speculative cleanup.
 
 4. **Backup the file first** specific to the code you are changing before updating the destination (e.g. GitHub push to main or push to S3 bucket).
+
+5. When you run into problem, you continue to back your head against the wall - think it through, search your knowledge based etc to find the right approach to solve the problem

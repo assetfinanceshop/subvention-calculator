@@ -42,7 +42,7 @@ Do this once in the `calculator-assetfinanceshop` AWS account console. Region: *
 ### 1. Secrets Manager
 
 - Secrets Manager → **Store a new secret** → "Other type of secret"
-- Plaintext: `Desire#54321` (just the raw password — no JSON wrapper needed; the Lambda also accepts `{"password":"…"}` form)
+- Plaintext: `<your-password>` (just the raw password — no JSON wrapper needed; the Lambda also accepts `{"password":"…"}` form). Get the actual value from your password manager / a teammate; never commit it.
 - Secret name: `subvention-calc/password`
 - Encryption: default (`aws/secretsmanager`)
 - Save the resulting **secret ARN** — needed in step 3.

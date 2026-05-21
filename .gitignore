@@ -16,6 +16,9 @@ node_modules/
 *.pem
 *.key
 
+# Local-only operational notes (contains ARNs, passwords, identifiers — never commit)
+PROJECTS.MD
+
 # Logs / scratch
 *.log
 *.tmp
