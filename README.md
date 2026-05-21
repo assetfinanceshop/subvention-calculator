@@ -20,7 +20,7 @@ Browser
    ▼
 CloudFront  (viewer-protocol-policy = redirect-to-https)
    │
-   ├── /        → S3 origin  (subvention-calculator-assetfinanceshop)
+   ├── /        → S3 origin  (tafs-subvention-calc)
    │              static index.html, fonts/
    │
    └── /auth    → Lambda Function URL  (subvention-calc-auth)
@@ -88,7 +88,7 @@ Do this once in the `calculator-assetfinanceshop` AWS account console. Region: *
 
 ### 4. S3 bucket
 
-- S3 → **Create bucket** → `subvention-calculator-assetfinanceshop` in `ap-southeast-2`
+- S3 → **Create bucket** → `tafs-subvention-calc` in `ap-southeast-2`
 - Block all public access: **ON** (CloudFront OAC will read it)
 - Default encryption: SSE-S3 (or SSE-KMS if you prefer)
 - Versioning: off (optional)
@@ -97,7 +97,7 @@ Do this once in the `calculator-assetfinanceshop` AWS account console. Region: *
 
 - CloudFront → **Create distribution**
 - Origin 1 (S3 default):
-  - Origin domain: pick the `subvention-calculator-assetfinanceshop.s3.ap-southeast-2.amazonaws.com` bucket
+  - Origin domain: pick the `tafs-subvention-calc.s3.ap-southeast-2.amazonaws.com` bucket
   - Origin access: **Origin access control (OAC)** → Create new OAC (sigv4, recommended)
   - After creating, CloudFront shows you a bucket policy snippet → click "Copy policy" → paste into the S3 bucket's Permissions → Bucket policy
 - Origin 2 (Lambda Function URL):
